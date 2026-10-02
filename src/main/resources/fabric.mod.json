@@ -1,0 +1,33 @@
+{
+	"schemaVersion": 1,
+	"id": "spectral-hardcore",
+	"version": "${version}",
+	"name": "Spectral Hardcore",
+	"description": "Customize Hardcore death and respawn options for solo and multiplayer worlds.",
+	"authors": [
+		"Fenyknit"
+	],
+	"license": "MIT",
+	"icon": "assets/spectral-hardcore/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"fenyknit.spectralhardcore.SpectralHardcore"
+		],
+		"client": [
+			"fenyknit.spectralhardcore.client.SpectralHardcoreClient"
+		]
+		
+	},
+	
+	"mixins": [
+	  "spectral-hardcore.mixins.json"
+	],
+
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

@@ -1,0 +1,4 @@
+{
+  "gamerule.spectral-hardcore.max_lives": "Máximo de Vidas",
+  "gamerule.spectral-hardcore.max_lives.description": "Número de mortes antes da morte permanente."
+}
