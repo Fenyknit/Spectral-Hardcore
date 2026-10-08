@@ -22,9 +22,10 @@ public abstract class ServerGamePacketListenerMixin {
         }
 
         ServerPlayer player = ((ServerGamePacketListenerImpl) (Object) this).player;
-        int deaths = player.getAttachedOrElse(SpectralHardcore.DEATH_COUNT, 0);
-        int maxLives = player.level().getGameRules().get(SpectralHardcore.MAX_LIVES);
-
-        return deaths >= maxLives;
+        boolean canRespawn = player.getAttachedOrElse(
+            SpectralHardcore.CAN_RESPAWN_AFTER_DEATH, false
+        );
+        
+        return !canRespawn;
     }
 }

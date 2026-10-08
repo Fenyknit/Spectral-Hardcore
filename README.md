@@ -18,11 +18,13 @@ You can choose to have multiple lives in Hardcore instead of a "one life" mode.
 
 To change that, when creating a Hardcore world, you can choose in the Misc section of the Game Rules how many times each player can die in the world. If you feel 3 lives is the sweet spot, just change the default number of one to 3, you choose what it feels better for you.
 
-## Currently Planned
-
 ### Shared Lives
 
-Another option I have planned for Hardcore is the option for player to share their total lives with each other. In a world with 5 lives, a player dying 5 times alone, means every one won't have any extra lives anymore.
+When creating a hardcore world, this option will make so the players have the live from the world shared together between them. One dies, and everyone loses a life. 
+
+When someone dies and there is no more lives remeaning, the players that are still alive can keep playing until their next death.
+
+## Currently Planned
 
 ### Single Soul
 

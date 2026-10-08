@@ -1,4 +1,6 @@
 {
   "gamerule.spectral-hardcore.max_lives": "Maximum Lives",
-  "gamerule.spectral-hardcore.max_lives.description": "Number of deaths before permanent death."
+  "gamerule.spectral-hardcore.max_lives.description": "Number of deaths before permanent death.",
+  "gamerule.spectral-hardcore.shared_lives": "Shared Lives",
+  "gamerule.spectral-hardcore.shared_lives.description": "Death is shared and reduces the maximum lives for all players."
 }
