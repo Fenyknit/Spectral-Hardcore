@@ -4,6 +4,9 @@
   "mixins": [
     "ServerGamePacketListenerMixin"
   ],
+  "client": [
+    "CreateWorldMoreTabMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
