@@ -1,7 +1,12 @@
 {
+  "gamerule.spectral-hardcore.hardcore_mode": "Modo do Spectral Hardcore",
   "gamerule.spectral-hardcore.max_lives": "Máximo de Vidas",
   "gamerule.spectral-hardcore.max_lives.description": "Número de mortes antes da morte permanente.",
   "gamerule.spectral-hardcore.shared_lives": "Vidas Compartilhadas",
   "gamerule.spectral-hardcore.shared_lives.description": "Mortes reduzem a vida máxima para todos os jogadores ao invés de apenas si mesmo.",
-  "gui.spectral-hardcore.multiple_lives": "Múltiplas vidas"
+  "gamerule.spectral-hardcore.hearts_lost_per_death": "Corações perdidos por morte",
+  "gui.spectral-hardcore.mode": "Modo",
+  "gui.spectral-hardcore.multiple_lives": "Múltiplas vidas",
+  "gui.spectral-hardcore.decaying_hardcore": "Decaying Hardcore",
+  "gui.spectral-hardcore.hearts_lost_per_death": "Corações perdidos por morte"
 }

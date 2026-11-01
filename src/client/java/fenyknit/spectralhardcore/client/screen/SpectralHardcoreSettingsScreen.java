@@ -14,6 +14,7 @@ import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.gamerules.GameRules;
 import fenyknit.spectralhardcore.SpectralHardcore;
+import fenyknit.spectralhardcore.HardcoreMode;
 
 public class SpectralHardcoreSettingsScreen extends Screen {
 
@@ -21,22 +22,27 @@ public class SpectralHardcoreSettingsScreen extends Screen {
     private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
     private Button doneButton;
     private String livesText;
-    private LinearLayout row;
+    private String decayText;
+    private LinearLayout content;
     private boolean sharedLives;
     private  CycleButton<Boolean> sharedLivesButton;
-
+    private HardcoreMode selectedMode;
 
     public SpectralHardcoreSettingsScreen(CreateWorldScreen parent) {
         super(Component.literal("Spectral Hardcore"));
         this.parent = parent;
 
-        int maxLives = parent.getUiState().getGameRules().get(SpectralHardcore.MAX_LIVES);
+        GameRules rules = parent.getUiState().getGameRules();
+
+        selectedMode = rules.get(SpectralHardcore.HARDCORE_MODE);
+
+        int maxLives = rules.get(SpectralHardcore.MAX_LIVES);
         livesText = Integer.toString(maxLives);
 
-        sharedLives = maxLives > 1 
-        && 
-        parent.getUiState().getGameRules().get(SpectralHardcore.SHARED_LIVES);
+        int heartsLost = rules.get(SpectralHardcore.HEARTS_LOST_PER_DEATH);
+        decayText = Integer.toString(heartsLost);
 
+        sharedLives = maxLives > 1 && rules.get(SpectralHardcore.SHARED_LIVES);
     }
 
 
@@ -47,25 +53,57 @@ public class SpectralHardcoreSettingsScreen extends Screen {
         layout.removeChildren();
         layout.addTitleHeader(title, font);
 
-        row = layout.addToContents(LinearLayout.horizontal().spacing(Button.DEFAULT_SPACING));
+        content = layout.addToContents(LinearLayout.vertical().spacing(Button.DEFAULT_SPACING));
+        content.defaultCellSetting().alignHorizontallyCenter();
+
+        content.addChild(
+            CycleButton.<HardcoreMode>builder(
+                mode -> switch (mode) {
+                    case MULTIPLE_LIVES ->
+                        Component.translatable("gui.spectral-hardcore.multiple_lives");
+                    case DECAYING_HARDCORE ->
+                        Component.translatable("gui.spectral-hardcore.decaying_hardcore");
+                }, 
+                selectedMode
+            )
+            .withValues(HardcoreMode.values())
+            .create(
+                Component.translatable("gui.spectral-hardcore.mode"),
+                (button, mode) -> {
+                    selectedMode = mode;
+                    rebuildWidgets();
+                }
+            )
+        );
+
+        LinearLayout row = content.addChild(
+            LinearLayout.horizontal().spacing(Button.DEFAULT_SPACING));
+
         // Aligns the Shared Lives button with the input bellow it's label
         row.defaultCellSetting().alignVerticallyBottom();
 
         LinearLayout amountColumn = LinearLayout.vertical().spacing(Button.DEFAULT_SPACING);
 
-        amountColumn.addChild(new StringWidget(
-            Component.translatable("gamerule.spectral-hardcore.max_lives"), 
-            font
-        ));
+        Component amountLabel = switch (selectedMode) {
+            case MULTIPLE_LIVES ->
+                Component.translatable("gamerule.spectral-hardcore.max_lives");
+            case DECAYING_HARDCORE ->
+                Component.translatable("gui.spectral-hardcore.hearts_lost_per_death");
+        };
 
-        EditBox livesInput = amountColumn.addChild(new EditBox(
+        amountColumn.addChild(new StringWidget(amountLabel, font));
+
+        EditBox amountInput = amountColumn.addChild(new EditBox(
             font,
             Button.DEFAULT_WIDTH,
             Button.DEFAULT_HEIGHT,
-            Component.translatable("gamerule.spectral-hardcore.max_lives")
+            amountLabel
         ));
 
-        livesInput.setValue(livesText);
+        amountInput.setValue(
+            selectedMode == HardcoreMode.MULTIPLE_LIVES ? livesText : decayText
+        );
+
         sharedLivesButton = row.addChild(
             CycleButton.onOffBuilder(sharedLives).create(Component.translatable("gamerule.spectral-hardcore.shared_lives"),
             (button, enabled) -> sharedLives = enabled
@@ -91,8 +129,13 @@ public class SpectralHardcoreSettingsScreen extends Screen {
             ).build()
         );
         // Updates the buttons when editing, and values changes are only saved when on Done.
-        livesInput.setResponder(value -> {
-            livesText = value;
+        amountInput.setResponder(value -> {
+            if (selectedMode == HardcoreMode.MULTIPLE_LIVES) {
+                livesText = value;
+            } else {
+                decayText = value;
+            }
+            
             updateControls();
         });
 
@@ -103,35 +146,37 @@ public class SpectralHardcoreSettingsScreen extends Screen {
     }
 
     private void updateControls() {
-        Integer maxLives = getValidMaxLives();
+        Integer amount = getValidAmount();
+        boolean multipleLivesMode = selectedMode == HardcoreMode.MULTIPLE_LIVES;
+        
+        doneButton.active = amount != null;
+        sharedLivesButton.active = multipleLivesMode && amount != null && amount > 1;
 
-        doneButton.active = maxLives != null;
-        sharedLivesButton.active = maxLives != null && maxLives > 1;
-
-        if (maxLives != null && maxLives == 1) {
+        if (multipleLivesMode && amount != null && amount == 1) {
             sharedLives = false;
             sharedLivesButton.setValue(false);
         }
     }
 
-    private Integer getValidMaxLives() {
+    private Integer getValidAmount() {
+        String text = selectedMode == HardcoreMode.MULTIPLE_LIVES ? livesText : decayText;
+    
         try {
-            int maxLives = Integer.parseInt(livesText);
+            int amount = Integer.parseInt(text);
 
-            if (maxLives >= 1) {
-                return maxLives;
+            if (amount >= 1) {
+                return amount;
             }
-        } catch (NumberFormatException exception) {
+        } catch(NumberFormatException exception) {
             return null;
         }
-        
         return null;
     }
 
     private void onDone() {
-        Integer maxLives = getValidMaxLives();
+        Integer amount = getValidAmount();
 
-        if (maxLives == null) {
+        if (amount == null) {
             return;
         }
 
@@ -139,11 +184,17 @@ public class SpectralHardcoreSettingsScreen extends Screen {
             parent.getUiState().getSettings().dataConfiguration().enabledFeatures()
         );
 
-        rules.set(SpectralHardcore.MAX_LIVES, maxLives, null);
-        rules.set(SpectralHardcore.SHARED_LIVES, maxLives > 1 && sharedLives, null);
+        rules.set(SpectralHardcore.HARDCORE_MODE, selectedMode, null);
         
-        parent.getUiState().setGameRules(rules);
+        if (selectedMode == HardcoreMode.MULTIPLE_LIVES) {
+            rules.set(SpectralHardcore.MAX_LIVES, amount, null);
+            rules.set(SpectralHardcore.SHARED_LIVES, amount > 1 && sharedLives, null);
+        } else {
+            rules.set(SpectralHardcore.HEARTS_LOST_PER_DEATH, amount, null);
+            rules.set(SpectralHardcore.SHARED_LIVES, false, null);
+        }
 
+        parent.getUiState().setGameRules(rules);
         onClose();
     }
     
@@ -155,6 +206,6 @@ public class SpectralHardcoreSettingsScreen extends Screen {
     @Override
     protected void repositionElements() {
         layout.arrangeElements();
-        row.setY(layout.getHeaderHeight() + Button.DEFAULT_SPACING);
+        content.setY(layout.getHeaderHeight() + Button.DEFAULT_SPACING);
     }
 }
